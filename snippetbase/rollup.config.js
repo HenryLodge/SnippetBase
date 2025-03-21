@@ -31,6 +31,7 @@ export default fs
             css.write(name + ".css");
           },
           preprocess: sveltePreprocess(),
+          "enable-ts-plugin": true,
         }),
 
         // If you have external dependencies installed from
