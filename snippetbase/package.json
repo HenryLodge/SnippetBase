@@ -1,0 +1,63 @@
+{
+  "name": "snippetbase",
+  "displayName": "SnippetBase",
+  "description": "A local file system of your most used code snippets",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "snippetbase.helloWorld",
+        "category": "SnippetBase",
+        "title": "Hello World"
+      },
+      {
+        "command": "snippetbase.askQuestion",
+        "category": "SnippetBase",
+        "title": "Ask Question"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.21.0",
+    "rollup-plugin-svelte": "^7.2.2",
+    "rollup-plugin-terser": "^7.0.2",
+    "svelte": "^5.25.2",
+    "svelte-check": "^4.1.5",
+    "svelte-preprocess": "^6.0.3",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.7.3",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  }
+}
