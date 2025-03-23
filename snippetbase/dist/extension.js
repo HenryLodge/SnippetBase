@@ -38,6 +38,15 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.activate = activate;
 exports.deactivate = deactivate;
@@ -50,15 +59,15 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('snippetbase.helloWorld', () => {
         HelloWorldPanel_1.HelloWorldPanel.createOrShow(context.extensionUri);
     }));
-    context.subscriptions.push(vscode.commands.registerCommand("snippetbase.askQuestion", async () => {
-        const answer = await vscode.window.showInformationMessage("How are you today?", "Good", "Bad");
+    context.subscriptions.push(vscode.commands.registerCommand("snippetbase.askQuestion", () => __awaiter(this, void 0, void 0, function* () {
+        const answer = yield vscode.window.showInformationMessage("How are you today?", "Good", "Bad");
         if (answer === "Good") {
             vscode.window.showInformationMessage("Glad to hear that!");
         }
         else {
             vscode.window.showInformationMessage("I'm sorry to hear that :(");
         }
-    }));
+    })));
 }
 function deactivate() { }
 
@@ -107,19 +116,20 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.HelloWorldPanel = void 0;
 const vscode = __importStar(__webpack_require__(1));
 const getNonce_1 = __webpack_require__(3);
 class HelloWorldPanel {
-    /**
-     * Track the currently panel. Only allow a single panel to exist at a time.
-     */
-    static currentPanel;
-    static viewType = "hello-world";
-    _panel;
-    _extensionUri;
-    _disposables = [];
     static createOrShow(extensionUri) {
         const column = vscode.window.activeTextEditor
             ? vscode.window.activeTextEditor.viewColumn
@@ -143,13 +153,15 @@ class HelloWorldPanel {
         HelloWorldPanel.currentPanel = new HelloWorldPanel(panel, extensionUri);
     }
     static kill() {
-        HelloWorldPanel.currentPanel?.dispose();
+        var _a;
+        (_a = HelloWorldPanel.currentPanel) === null || _a === void 0 ? void 0 : _a.dispose();
         HelloWorldPanel.currentPanel = undefined;
     }
     static revive(panel, extensionUri) {
         HelloWorldPanel.currentPanel = new HelloWorldPanel(panel, extensionUri);
     }
     constructor(panel, extensionUri) {
+        this._disposables = [];
         this._panel = panel;
         this._extensionUri = extensionUri;
         // Set the webview's initial html content
@@ -181,36 +193,38 @@ class HelloWorldPanel {
             }
         }
     }
-    async _update() {
-        const webview = this._panel.webview;
-        this._panel.webview.html = this._getHtmlForWebview(webview);
-        webview.onDidReceiveMessage(async (data) => {
-            switch (data.type) {
-                case "onInfo": {
-                    if (!data.value) {
-                        return;
+    _update() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const webview = this._panel.webview;
+            this._panel.webview.html = this._getHtmlForWebview(webview);
+            webview.onDidReceiveMessage((data) => __awaiter(this, void 0, void 0, function* () {
+                switch (data.type) {
+                    case "onInfo": {
+                        if (!data.value) {
+                            return;
+                        }
+                        vscode.window.showInformationMessage(data.value);
+                        break;
                     }
-                    vscode.window.showInformationMessage(data.value);
-                    break;
-                }
-                case "onError": {
-                    if (!data.value) {
-                        return;
+                    case "onError": {
+                        if (!data.value) {
+                            return;
+                        }
+                        vscode.window.showErrorMessage(data.value);
+                        break;
                     }
-                    vscode.window.showErrorMessage(data.value);
-                    break;
+                    // case "tokens": {
+                    //   await Util.globalState.update(accessTokenKey, data.accessToken);
+                    //   await Util.globalState.update(refreshTokenKey, data.refreshToken);
+                    //   break;
+                    // }
                 }
-                // case "tokens": {
-                //   await Util.globalState.update(accessTokenKey, data.accessToken);
-                //   await Util.globalState.update(refreshTokenKey, data.refreshToken);
-                //   break;
-                // }
-            }
+            }));
         });
     }
     _getHtmlForWebview(webview) {
         // And the uri we use to load this script in the webview
-        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "main.js"));
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out/compiled", "HelloWorld.js"));
         // Uri to load styles into webview
         const stylesResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "reset.css"));
         const stylesMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css"));
@@ -235,15 +249,13 @@ class HelloWorldPanel {
         </script>
 			</head>
       <body>
-        <h1>Hello World</h1>
-        <input />
-        <button>hello</button>
 			</body>
       <script src="${scriptUri}" nonce="${nonce}">
 			</html>`;
     }
 }
 exports.HelloWorldPanel = HelloWorldPanel;
+HelloWorldPanel.viewType = "hello-world";
 
 
 /***/ }),
