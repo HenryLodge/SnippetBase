@@ -54,8 +54,10 @@ exports.deactivate = deactivate;
 // Import the module and reference it with the alias vscode in your code below
 const vscode = __importStar(__webpack_require__(1));
 const HelloWorldPanel_1 = __webpack_require__(2);
+const SidebarProvider_1 = __webpack_require__(4);
 function activate(context) {
-    console.log('Congratulations, your extension "snippetbase" is now active!');
+    const sidebarProvider = new SidebarProvider_1.SidebarProvider(context.extensionUri);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider("snippetbate-sidebar", sidebarProvider));
     context.subscriptions.push(vscode.commands.registerCommand('snippetbase.helloWorld', () => {
         HelloWorldPanel_1.HelloWorldPanel.createOrShow(context.extensionUri);
     }));
@@ -141,7 +143,7 @@ class HelloWorldPanel {
             return;
         }
         // Otherwise, create a new panel.
-        const panel = vscode.window.createWebviewPanel(HelloWorldPanel.viewType, "VSinder", column || vscode.ViewColumn.One, {
+        const panel = vscode.window.createWebviewPanel(HelloWorldPanel.viewType, "SnippetBase", column || vscode.ViewColumn.One, {
             // Enable javascript in the webview
             enableScripts: true,
             // And restrict the webview to only loading content from our extension's `media` directory.
@@ -273,6 +275,121 @@ function getNonce() {
     }
     return text;
 }
+
+
+/***/ }),
+/* 4 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SidebarProvider = void 0;
+const vscode = __importStar(__webpack_require__(1));
+const getNonce_1 = __webpack_require__(3);
+class SidebarProvider {
+    constructor(_extensionUri) {
+        this._extensionUri = _extensionUri;
+    }
+    resolveWebviewView(webviewView) {
+        this._view = webviewView;
+        webviewView.webview.options = {
+            // Allow scripts in the webview
+            enableScripts: true,
+            localResourceRoots: [this._extensionUri],
+        };
+        webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        webviewView.webview.onDidReceiveMessage((data) => __awaiter(this, void 0, void 0, function* () {
+            switch (data.type) {
+                case "onInfo": {
+                    if (!data.value) {
+                        return;
+                    }
+                    vscode.window.showInformationMessage(data.value);
+                    break;
+                }
+                case "onError": {
+                    if (!data.value) {
+                        return;
+                    }
+                    vscode.window.showErrorMessage(data.value);
+                    break;
+                }
+            }
+        }));
+    }
+    revive(panel) {
+        this._view = panel;
+    }
+    _getHtmlForWebview(webview) {
+        const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "reset.css"));
+        const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebar.js"));
+        const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "out", "compiled/sidebar.css"));
+        const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css"));
+        // Use a nonce to only allow a specific script to be run.
+        const nonce = (0, getNonce_1.getNonce)();
+        return `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<!--
+					Use a content security policy to only allow loading images from https or from our extension directory,
+					and only allow scripts that have a specific nonce.
+        -->
+        <meta http-equiv="Content-Security-Policy" content="img-src https: data:; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}';">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<link href="${styleResetUri}" rel="stylesheet">
+				<link href="${styleVSCodeUri}" rel="stylesheet">
+        <link href="${styleMainUri}" rel="stylesheet">
+			</head>
+      <body>
+				<script nonce="${nonce}" src="${scriptUri}"></script>
+			</body>
+			</html>`;
+    }
+}
+exports.SidebarProvider = SidebarProvider;
 
 
 /***/ })
