@@ -16,6 +16,10 @@
       {
         "command": "snippetbase.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "snippetbase.test",
+        "title": "Test message"
       }
     ]
   },
